@@ -6,6 +6,7 @@ dotenv.config()
 const express = require('express')
 const app = express()
 
+// Use SubX to auto save tokens
 const SubX = require('subx')
 const store = SubX.create({
   botTokens: []
@@ -30,6 +31,10 @@ app.get('/botoauth', async (req, res) => {
   store.botTokens.push(rc.token())
   res.status(400)
   res.send('hello world')
+})
+
+app.post('/glip-webhook', (req, res) => {
+
 })
 
 app.listen(3000)
