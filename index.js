@@ -1,28 +1,26 @@
 const fs = require('fs')
 const R = require('ramda')
-
 const dotenv = require('dotenv')
-dotenv.config()
-
 const express = require('express')
-const app = express()
-
 const bodyParser = require('body-parser')
-app.use(bodyParser.json())
+const RingCentral = require('ringcentral-js-concise').default
+const botTokens = require('./bot-tokens.json')
+const userTokens = require('./user-tokens.json')
+
+dotenv.config()
 
 // Use SubX to auto save tokens
 const SubX = require('subx')
 const store = SubX.create({
-  botTokens: {}
+  botTokens,
+  userTokens
 })
-const botTokens = require('./bot-tokens.json')
-store.botTokens = botTokens
 SubX.autoRun(store, () => {
   fs.writeFileSync('./bot-tokens.json', JSON.stringify(store.botTokens, null, 2))
 })
-
-const RingCentral = require('ringcentral-js-concise').default
-const rc = new RingCentral(process.env.RINGCENTRAL_CLIENT_ID, process.env.RINGCENTRAL_CLIENT_SECRET, process.env.RINGCENTRAL_SERVER)
+SubX.autoRun(store, () => {
+  fs.writeFileSync('./user-tokens.json', JSON.stringify(store.userTokens, null, 2))
+})
 
 // remove existing bot WebHooks
 const clearBotWebHooks = async token => {
@@ -64,8 +62,12 @@ R.values(store.botTokens).forEach(async token => {
   await setupBotWebHook(token)
 })
 
+const app = express()
+app.use(bodyParser.json())
+
 // add bot to Glip
 app.get('/bot-oauth', async (req, res) => {
+  const rc = new RingCentral(process.env.RINGCENTRAL_BOT_CLIENT_ID, process.env.RINGCENTRAL_BOT_CLIENT_SECRET, process.env.RINGCENTRAL_SERVER)
   const code = req.query.code
   try {
     await rc.authorize({ code, redirectUri: process.env.RINGCENTRAL_BOT_SERVER + '/bot-oauth' })
@@ -78,8 +80,31 @@ app.get('/bot-oauth', async (req, res) => {
 
   await setupBotWebHook(token)
 
-  // res.status(400)
-  res.send('Bot added!')
+  res.send('Bot added')
+})
+
+app.get('/user-oauth', async (req, res) => {
+  const userRc = new RingCentral(process.env.RINGCENTRAL_USER_CLIENT_ID, process.env.RINGCENTRAL_USER_CLIENT_SECRET, process.env.RINGCENTRAL_SERVER)
+  const code = req.query.code
+  const [groupId, botId] = req.query.state.split(':')
+  console.log(`User tried to authorize from Glip group ${groupId} for bot ${botId}`)
+  try {
+    await userRc.authorize({ code, redirectUri: process.env.RINGCENTRAL_BOT_SERVER + '/user-oauth' })
+  } catch (e) {
+    console.log(JSON.stringify(e.response.data, null, 2))
+  }
+  const token = userRc.token()
+  console.log(token)
+  store.userTokens[token.owner_id] = token
+
+  // todo: setup user voicemail webhook
+
+  const botRc = new RingCentral('', '', process.env.RINGCENTRAL_SERVER)
+  botRc.token(store.botTokens[botId])
+  await botRc.post(`/restapi/v1.0/glip/groups/${groupId}/posts`, {
+    text: 'You have successfully authorized me to access your RingCentral data!'
+  })
+  res.send('You have authorized the bot to access your RingCentral data! Please close this page and get back to Glip')
 })
 
 // bot receive message from Glip
@@ -102,12 +127,24 @@ app.post('/bot-webhook', async (req, res) => {
         break
       case 'PostAdded':
         if (body.creatorId !== botId) { // Bot should not respond to himself
-          const token = store.botTokens[botId]
-          const rc = new RingCentral('', '', process.env.RINGCENTRAL_SERVER)
-          rc.token(token)
-          await rc.post(`/restapi/v1.0/glip/groups/${body.groupId}/posts`, {
-            text: 'Got it!'
-          })
+          const botToken = store.botTokens[botId]
+          const botRc = new RingCentral('', '', process.env.RINGCENTRAL_SERVER)
+          botRc.token(botToken)
+          const userToken = store.userTokens[body.creatorId]
+          if (userToken) {
+            await botRc.post(`/restapi/v1.0/glip/groups/${body.groupId}/posts`, {
+              text: 'Got it!'
+            })
+          } else {
+            const userRc = new RingCentral(process.env.RINGCENTRAL_USER_CLIENT_ID, '', process.env.RINGCENTRAL_SERVER)
+            const authorizeUri = userRc.authorizeUri(process.env.RINGCENTRAL_BOT_SERVER + '/user-oauth', {
+              state: body.groupId + ':' + botId,
+              responseType: 'code'
+            })
+            await botRc.post(`/restapi/v1.0/glip/groups/${body.groupId}/posts`, {
+              text: `Please [click here](${authorizeUri}) to authorize me to access your RingCentral data`
+            })
+          }
         }
         break
       default:
@@ -115,7 +152,7 @@ app.post('/bot-webhook', async (req, res) => {
     }
   }
   res.header('validation-token', req.header('validation-token'))
-  res.send('hello from webhook')
+  res.send('WebHook replied')
 })
 
 app.listen(3000)

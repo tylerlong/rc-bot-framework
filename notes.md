@@ -45,3 +45,7 @@ When user post a message to bot:
      mentions: null,
      eventType: 'PostAdded' } }
 ```
+
+
+
+Auto refrensh webhook: https://github.com/embbnux/botbuilder-glip/blob/master/src/glip.ts#L158
