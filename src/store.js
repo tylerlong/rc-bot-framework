@@ -14,6 +14,7 @@ dotenv.config()
 const Store = new SubX({
   bots: {},
   users: {},
+  mappings: {}, // from userId to groupId, means the user want to monitor voicemail in that group.
   getBot (id) {
     return this.bots[id]
   },
