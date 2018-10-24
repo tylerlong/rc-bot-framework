@@ -1,16 +1,17 @@
-const fs = require('fs')
-const R = require('ramda')
-const dotenv = require('dotenv')
-const express = require('express')
-const bodyParser = require('body-parser')
-const RingCentral = require('ringcentral-js-concise').default
-const botTokens = require('./bot-tokens.json')
-const userTokens = require('./user-tokens.json')
+import fs from 'fs'
+import R from 'ramda'
+import dotenv from 'dotenv'
+import express from 'express'
+import bodyParser from 'body-parser'
+import RingCentral from 'ringcentral-js-concise'
+import SubX from 'subx'
+
+import botTokens from './bot-tokens.json'
+import userTokens from './user-tokens.json'
 
 dotenv.config()
 
 // Use SubX to auto save tokens
-const SubX = require('subx')
 const store = SubX.create({
   botTokens,
   userTokens
