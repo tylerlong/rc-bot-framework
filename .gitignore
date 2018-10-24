@@ -1,4 +1,4 @@
 node_modules/
 .env
-fakeDb/
+database.json
 .DS_Store
