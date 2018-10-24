@@ -1,7 +1,7 @@
 {
   "license": "MIT",
   "scripts": {
-    "start": "node -r @babel/register index.js"
+    "start": "node -r @babel/register src/index.js"
   },
   "devDependencies": {
     "@babel/core": "^7.1.2",

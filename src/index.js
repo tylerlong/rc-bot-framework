@@ -5,9 +5,10 @@ import express from 'express'
 import bodyParser from 'body-parser'
 import RingCentral from 'ringcentral-js-concise'
 import SubX from 'subx'
+import path from 'path'
 
-import botTokens from './bot-tokens.json'
-import userTokens from './user-tokens.json'
+import botTokens from '../fakeDb/bot-tokens.json'
+import userTokens from '../fakeDb/user-tokens.json'
 
 dotenv.config()
 
@@ -17,10 +18,10 @@ const store = SubX.create({
   userTokens
 })
 SubX.autoRun(store, () => {
-  fs.writeFileSync('./bot-tokens.json', JSON.stringify(store.botTokens, null, 2))
+  fs.writeFileSync(path.join(__dirname, '../fakeDb/bot-tokens.json'), JSON.stringify(store.botTokens, null, 2))
 })
 SubX.autoRun(store, () => {
-  fs.writeFileSync('./user-tokens.json', JSON.stringify(store.userTokens, null, 2))
+  fs.writeFileSync(path.join(__dirname, '../fakeDb/user-tokens.json'), JSON.stringify(store.userTokens, null, 2))
 })
 
 // remove existing bot WebHooks
