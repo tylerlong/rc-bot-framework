@@ -1,3 +1,4 @@
 node_modules/
 .env
 fakeDb/
+.DS_Store
