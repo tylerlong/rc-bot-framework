@@ -1,7 +1,7 @@
 import dotenv from 'dotenv'
 import express from 'express'
 import bodyParser from 'body-parser'
-import store, { Bot, User } from './store'
+import store, { Bot, User, Subscription } from './store'
 
 dotenv.config()
 
@@ -50,10 +50,14 @@ app.post('/bot-webhook', async (req, res) => {
         if (/\bmonitor\b/i.test(body.text)) { // monitor voicemail
           const user = store.getUser(body.creatorId)
           if (user) {
-            if (!store.mappings[body.creatorId]) {
-              store.mappings[body.creatorId] = { [body.groupId]: true }
+            if (!store.subscriptions[body.creatorId]) {
+              const subscription = new Subscription({ userId: body.creatorId, groups: { [body.groupId]: true } })
+
+              await subscription.setupWebHook()
+
+              store.addSubscription(body.creatorId, subscription)
             } else {
-              store.mappings[body.creatorId][body.groupId] = true
+              store.subscriptions[body.creatorId].groups[body.groupId] = true
             }
             await bot.sendMessage(body.groupId, { text: `![:Person](${body.creatorId}), now your voicemail is monitored!` })
           } else {
@@ -74,7 +78,15 @@ app.post('/bot-webhook', async (req, res) => {
     }
   }
   res.header('validation-token', req.header('validation-token'))
-  res.send('WebHook replied')
+  res.send('/bot-webhook replied')
+})
+
+// user receive message from Platform
+app.post('/user-webhook', async (req, res) => {
+  const message = req.body
+  console.log('Message received via user WebHook:', message)
+  res.header('validation-token', req.header('validation-token'))
+  res.send('/user-webhook replied')
 })
 
 app.listen(3000)

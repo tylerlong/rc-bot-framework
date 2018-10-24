@@ -14,7 +14,7 @@ dotenv.config()
 const Store = new SubX({
   bots: {},
   users: {},
-  mappings: {}, // from userId to groupId, means the user want to monitor voicemail in that group.
+  subscriptions: {}, // from userId to groupId, means the user want to monitor voicemail in that group.
   getBot (id) {
     return this.bots[id]
   },
@@ -26,6 +26,9 @@ const Store = new SubX({
   },
   addUser (user) {
     this.users[user.token.owner_id] = user
+  },
+  addSubscription (userId, subscription) {
+    this.subscriptions[userId] = subscription
   }
 })
 
@@ -44,7 +47,7 @@ export const Bot = new SubX({
     try {
       await this.rc.authorize({ code, redirectUri: process.env.RINGCENTRAL_BOT_SERVER + '/bot-oauth' })
     } catch (e) {
-      console.log(e.response.data)
+      console.log('Bot authorize', e.response.data)
       throw e
     }
     this.token = this.rc.token()
@@ -62,31 +65,41 @@ export const Bot = new SubX({
         }
       })
     } catch (e) {
-      console.log(e.response.data)
+      console.log('Bot setupWebHook', e.response.data)
       throw e
     }
   },
   async clearWebHooks () {
-    const r = await this.rc.get('/restapi/v1.0/subscription')
-    r.data.records.forEach(async sub => {
-      await this.rc.delete(`/restapi/v1.0/subscription/${sub.id}`)
-    })
+    try {
+      const r = await this.rc.get('/restapi/v1.0/subscription')
+      for (const sub of r.data.records) {
+        await this.rc.delete(`/restapi/v1.0/subscription/${sub.id}`)
+      }
+    } catch (e) {
+      console.log('Bot clearWebHooks', e.response.data)
+      throw e
+    }
   },
   async sendMessage (groupId, messageObj) {
-    await this.rc.post(`/restapi/v1.0/glip/groups/${groupId}/posts`, messageObj)
+    try {
+      await this.rc.post(`/restapi/v1.0/glip/groups/${groupId}/posts`, messageObj)
+    } catch (e) {
+      console.log('Bot sendMessage', e.response.data)
+      throw e
+    }
   },
   async validate () {
     try {
       await this.rc.get('/restapi/v1.0/account/~/extension/~')
       return true
     } catch (e) {
+      console.log('Bot validate', e.response.data)
       const errorCode = e.response.data.errorCode
       if (errorCode === 'OAU-232' || errorCode === 'CMN-405') {
         delete store.bots[this.token.owner_id]
         console.log(`Bot user ${this.token.owner_id} has been deleted`)
         return false
       }
-      console.log(e.response.data)
       throw e
     }
   }
@@ -113,7 +126,7 @@ export const User = new SubX({
     try {
       await this.rc.authorize({ code, redirectUri: process.env.RINGCENTRAL_BOT_SERVER + '/user-oauth' })
     } catch (e) {
-      console.log(e.response.data)
+      console.log('User authorize', e.response.data)
       throw e
     }
     this.token = this.rc.token()
@@ -123,7 +136,42 @@ export const User = new SubX({
       await this.rc.get('/restapi/v1.0/account/~/extension/~')
       return true
     } catch (e) {
-      console.log(e.response.data)
+      console.log('User validate', e.response.data)
+      try {
+        await this.rc.refresh()
+        this.token = this.rc.token()
+        return true
+      } catch (e) {
+        console.log('User validate refresh', e.response.data)
+        delete store.users[this.token.owner_id]
+        console.log(`User ${this.token.owner_id} refresh token has expired`)
+        return false
+      }
+    }
+  }
+})
+
+// Subscription
+export const Subscription = new SubX({
+  groups: {},
+  get rc () {
+    return store.users[this.userId].rc
+  },
+  async setupWebHook () {
+    try {
+      const r = await this.rc.post('/restapi/v1.0/subscription', {
+        eventFilters: [
+          '/restapi/v1.0/account/~/extension/~/message-store'
+        ],
+        deliveryMode: {
+          transportType: 'WebHook',
+          address: process.env.RINGCENTRAL_BOT_SERVER + '/user-webhook'
+        }
+      })
+      console.log(r.data)
+      this.subscription = r.data
+    } catch (e) {
+      console.log('Subscription setupWebHook', e.response.data)
       throw e
     }
   }
