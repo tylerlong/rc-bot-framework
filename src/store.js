@@ -181,6 +181,15 @@ export const User = new SubX({
     if (hasNoGroup) {
       await this.setupWebHook()
     }
+  },
+  async getVoiceMails (count) {
+    const r = await this.rc.get('/restapi/v1.0/account/~/extension/~/message-store', {
+      params: {
+        messageType: 'VoiceMail',
+        perPage: count
+      }
+    })
+    return r.data.records
   }
 })
 

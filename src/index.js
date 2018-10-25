@@ -80,9 +80,15 @@ app.post('/user-webhook', async (req, res) => {
   const message = req.body
   console.log('Message received via user WebHook:', JSON.stringify(message, null, 2))
   if (message.body) {
-    if (message.body.changes.some(change => change.type === 'VoiceMail')) {
+    const change = message.body.changes.filter(change => change.type === 'VoiceMail' && change.newCount && change.newCount > 0)[0]
+    if (change) {
       const userId = message.body.extensionId
       const user = store.getUser(userId)
+      const voiceMails = await user.getVoiceMails(change.newCount)
+      console.log(JSON.stringify(voiceMails, null, 2))
+
+      // todo: process VoiceMails
+
       for (const groupId of Object.keys(user.groups)) {
         const botId = user.groups[groupId]
         const bot = store.getBot(botId)
