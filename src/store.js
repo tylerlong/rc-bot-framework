@@ -146,9 +146,22 @@ export const User = new SubX({
       }
     }
   },
-  async setupWebHook () {
+  async clearWebHooks () {
     try {
-      const r = await this.rc.post('/restapi/v1.0/subscription', {
+      const r = await this.rc.get('/restapi/v1.0/subscription')
+      for (const sub of r.data.records) {
+        if (sub.deliveryMode.address === process.env.RINGCENTRAL_BOT_SERVER + '/user-webhook') {
+          await this.rc.delete(`/restapi/v1.0/subscription/${sub.id}`)
+        }
+      }
+    } catch (e) {
+      console.log('Bot clearWebHooks', e.response.data)
+      throw e
+    }
+  },
+  async setupWebHook () { // setup WebHook for voicemail
+    try {
+      await this.rc.post('/restapi/v1.0/subscription', {
         eventFilters: [
           '/restapi/v1.0/account/~/extension/~/message-store'
         ],
@@ -157,15 +170,17 @@ export const User = new SubX({
           address: process.env.RINGCENTRAL_BOT_SERVER + '/user-webhook'
         }
       })
-      console.log(r.data)
     } catch (e) {
       console.log('User setupWebHook', e.response.data)
       throw e
     }
   },
   async addGroup (groupId, botId) {
+    const hasNoGroup = Object.keys(this.groups).length === 0
     this.groups[groupId] = botId
-    await this.setupWebHook()
+    if (hasNoGroup) {
+      await this.setupWebHook()
+    }
   }
 })
 
@@ -187,6 +202,10 @@ const store = new Store(database)
     const user = new User(store.users[k])
     if (await user.validate()) {
       store.users[k] = user
+      await user.clearWebHooks()
+      if (Object.keys(user.groups).length > 0) {
+        await user.setupWebHook()
+      }
     }
   }
 
