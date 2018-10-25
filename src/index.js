@@ -40,7 +40,8 @@ app.post('/bot-webhook', async (req, res) => {
       case 'GroupJoined':
         if (body.type === 'PrivateChat') {
           const bot = store.getBot(botId)
-          await bot.sendMessage(body.id, { text: `Hello, I am a chatbot. Please reply "![:Person](${botId})" if you want to talk to me.` })
+          await bot.sendMessage(body.id, { text: `Hello, I am a chatbot.
+Please reply "![:Person](${botId})" if you want to talk to me.` })
         }
         break
       case 'PostAdded':
