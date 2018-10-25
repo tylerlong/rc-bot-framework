@@ -80,11 +80,14 @@ app.post('/user-webhook', async (req, res) => {
   const message = req.body
   console.log('Message received via user WebHook:', JSON.stringify(message, null, 2))
   if (message.body) {
-    const user = store.getUser(message.body.extensionId)
-    for (const groupId of Object.keys(user.groups)) {
-      const botId = user.groups[groupId]
-      const bot = store.getBot(botId)
-      await bot.sendMessage(groupId, { text: 'You got a new RingCentral message' })
+    if (message.body.changes.some(change => change.type === 'VoiceMail')) {
+      const userId = message.body.extensionId
+      const user = store.getUser(userId)
+      for (const groupId of Object.keys(user.groups)) {
+        const botId = user.groups[groupId]
+        const bot = store.getBot(botId)
+        await bot.sendMessage(groupId, { text: `![:Person](${userId}), you got a new voiceMail!` })
+      }
     }
   }
   res.header('validation-token', req.header('validation-token'))
