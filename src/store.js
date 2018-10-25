@@ -163,8 +163,8 @@ export const User = new SubX({
       throw e
     }
   },
-  async addGroup (groupId) {
-    this.groups[groupId] = true
+  async addGroup (groupId, botId) {
+    this.groups[groupId] = botId
     await this.setupWebHook()
   }
 })

@@ -52,7 +52,7 @@ Please reply "![:Person](${botId})" if you want to talk to me.` })
         if (/\bmonitor\b/i.test(body.text)) { // monitor voicemail
           const user = store.getUser(body.creatorId)
           if (user) {
-            await user.addGroup(body.groupId)
+            await user.addGroup(body.groupId, botId)
             await bot.sendMessage(body.groupId, { text: `![:Person](${body.creatorId}), now your voicemail is monitored!` })
           } else {
             const user = new User()
@@ -80,10 +80,12 @@ app.post('/user-webhook', async (req, res) => {
   const message = req.body
   console.log('Message received via user WebHook:', JSON.stringify(message, null, 2))
   if (message.body) {
-    const user = store.getUser(message.body.creatorId)
-    Object.keys(user.groups).forEach(groupId => {
-    // send notification to each glip group
-    })
+    const user = store.getUser(message.body.extensionId)
+    for (const groupId of Object.keys(user.groups)) {
+      const botId = user.groups[groupId]
+      const bot = store.getBot(botId)
+      await bot.sendMessage(groupId, { text: 'You got a new RingCentral message' })
+    }
   }
   res.header('validation-token', req.header('validation-token'))
   res.send('/user-webhook replied')
