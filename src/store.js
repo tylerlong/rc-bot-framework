@@ -14,7 +14,6 @@ dotenv.config()
 const Store = new SubX({
   bots: {},
   users: {},
-  subscriptions: {}, // from userId to groupId, means the user want to monitor voicemail in that group.
   getBot (id) {
     return this.bots[id]
   },
@@ -26,9 +25,6 @@ const Store = new SubX({
   },
   addUser (user) {
     this.users[user.token.owner_id] = user
-  },
-  addSubscription (userId, subscription) {
-    this.subscriptions[userId] = subscription
   }
 })
 
@@ -107,6 +103,7 @@ export const Bot = new SubX({
 
 // User
 export const User = new SubX({
+  groups: {},
   get rc () {
     const rc = new RingCentral(
       process.env.RINGCENTRAL_USER_CLIENT_ID,
@@ -148,14 +145,6 @@ export const User = new SubX({
         return false
       }
     }
-  }
-})
-
-// Subscription
-export const Subscription = new SubX({
-  groups: {},
-  get rc () {
-    return store.users[this.userId].rc
   },
   async setupWebHook () {
     try {
@@ -169,11 +158,14 @@ export const Subscription = new SubX({
         }
       })
       console.log(r.data)
-      this.subscription = r.data
     } catch (e) {
-      console.log('Subscription setupWebHook', e.response.data)
+      console.log('User setupWebHook', e.response.data)
       throw e
     }
+  },
+  async addGroup (groupId) {
+    this.groups[groupId] = true
+    await this.setupWebHook()
   }
 })
 

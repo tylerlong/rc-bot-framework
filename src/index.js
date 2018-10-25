@@ -1,7 +1,7 @@
 import dotenv from 'dotenv'
 import express from 'express'
 import bodyParser from 'body-parser'
-import store, { Bot, User, Subscription } from './store'
+import store, { Bot, User } from './store'
 
 dotenv.config()
 
@@ -24,14 +24,15 @@ app.get('/user-oauth', async (req, res) => {
   store.addUser(user)
   const [groupId, botId] = req.query.state.split(':')
   const bot = store.getBot(botId)
-  await bot.sendMessage(groupId, { text: `![:Person](${user.token.owerner_id}), You have successfully authorized me to access your RingCentral data! Please reply "![:Person](${botId}) monitor" if you want me to monitor your voicemail.` })
+  await bot.sendMessage(groupId, { text: `![:Person](${user.token.owner_id}), You have successfully authorized me to access your RingCentral data!
+Please reply "![:Person](${botId}) monitor" if you want me to monitor your voicemail.` })
   res.send('You have authorized the bot to access your RingCentral data! Please close this page and get back to Glip.')
 })
 
 // bot receive message from Glip
 app.post('/bot-webhook', async (req, res) => {
   const message = req.body
-  console.log('Message received via bot WebHook:', message)
+  console.log('Message received via bot WebHook:', JSON.stringify(message, null, 2))
   const botId = message.ownerId
   const body = message.body
   if (body) {
@@ -39,7 +40,7 @@ app.post('/bot-webhook', async (req, res) => {
       case 'GroupJoined':
         if (body.type === 'PrivateChat') {
           const bot = store.getBot(botId)
-          await bot.sendMessage(body.id, { text: `Hello, I am a chatbot. Please mention me if you want to talk to me.` })
+          await bot.sendMessage(body.id, { text: `Hello, I am a chatbot. Please reply "![:Person](${botId})" if you want to talk to me.` })
         }
         break
       case 'PostAdded':
@@ -50,15 +51,7 @@ app.post('/bot-webhook', async (req, res) => {
         if (/\bmonitor\b/i.test(body.text)) { // monitor voicemail
           const user = store.getUser(body.creatorId)
           if (user) {
-            if (!store.subscriptions[body.creatorId]) {
-              const subscription = new Subscription({ userId: body.creatorId, groups: { [body.groupId]: true } })
-
-              await subscription.setupWebHook()
-
-              store.addSubscription(body.creatorId, subscription)
-            } else {
-              store.subscriptions[body.creatorId].groups[body.groupId] = true
-            }
+            await user.addGroup(body.groupId)
             await bot.sendMessage(body.groupId, { text: `![:Person](${body.creatorId}), now your voicemail is monitored!` })
           } else {
             const user = new User()
@@ -84,7 +77,13 @@ app.post('/bot-webhook', async (req, res) => {
 // user receive message from Platform
 app.post('/user-webhook', async (req, res) => {
   const message = req.body
-  console.log('Message received via user WebHook:', message)
+  console.log('Message received via user WebHook:', JSON.stringify(message, null, 2))
+  if (message.body) {
+    const user = store.getUser(message.body.creatorId)
+    Object.keys(user.groups).forEach(groupId => {
+    // send notification to each glip group
+    })
+  }
   res.header('validation-token', req.header('validation-token'))
   res.send('/user-webhook replied')
 })
