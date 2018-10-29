@@ -6,8 +6,6 @@ import path from 'path'
 import { debounceTime } from 'rxjs/operators'
 import * as R from 'ramda'
 
-import database from '../database.json'
-
 dotenv.config()
 
 // Store
@@ -194,6 +192,11 @@ export const User = new SubX({
 })
 
 // load data from database
+const databaseUri = path.join(__dirname, '..', process.env.RINGCENTRAL_BOT_DATABASE)
+if (!fs.existsSync(databaseUri)) {
+  fs.writeFileSync(databaseUri, '{}')
+}
+const database = require(databaseUri)
 const store = new Store(database)
 ;(async () => {
   // init bots
