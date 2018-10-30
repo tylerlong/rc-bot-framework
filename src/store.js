@@ -4,7 +4,6 @@ import RingCentral from 'ringcentral-js-concise'
 import fs from 'fs'
 import path from 'path'
 import { debounceTime } from 'rxjs/operators'
-import * as R from 'ramda'
 
 dotenv.config()
 
@@ -200,7 +199,7 @@ const database = require(databaseUri)
 const store = new Store(database)
 ;(async () => {
   // init bots
-  for (const k of R.keys(store.bots)) {
+  for (const k of Object.keys(store.bots)) {
     const bot = new Bot(store.bots[k])
     if (await bot.validate()) {
       store.bots[k] = bot
@@ -210,7 +209,7 @@ const store = new Store(database)
   }
 
   // init users
-  for (const k of R.keys(store.users)) {
+  for (const k of Object.keys(store.users)) {
     const user = new User(store.users[k])
     if (await user.validate()) {
       store.users[k] = user
