@@ -1,9 +1,10 @@
 import dotenv from 'dotenv'
 import SubX from 'subx'
 import RingCentral from 'ringcentral-js-concise'
-import fs from 'fs'
-import path from 'path'
 import { debounceTime } from 'rxjs/operators'
+import path from 'path'
+
+import { FileDatabase, S3Database } from './database'
 
 dotenv.config()
 
@@ -11,6 +12,33 @@ dotenv.config()
 const Store = new SubX({
   bots: {},
   users: {},
+  async init (json) {
+    for (const key of Object.keys(json)) {
+      if (key !== 'bots' && key !== 'users') {
+        this[key] = json[key]
+      }
+    }
+    // init bots
+    for (const k of Object.keys(json.bots)) {
+      const bot = new Bot(json.bots[k])
+      if (await bot.validate()) {
+        store.bots[k] = bot
+        await bot.clearWebHooks()
+        await bot.setupWebHook()
+      }
+    }
+    // init users
+    for (const k of Object.keys(json.users)) {
+      const user = new User(json.users[k])
+      if (await user.validate()) {
+        store.users[k] = user
+        await user.clearWebHooks()
+        if (Object.keys(user.groups).length > 0) {
+          await user.setupWebHook()
+        }
+      }
+    }
+  },
   getBot (id) {
     return this.bots[id]
   },
@@ -190,40 +218,22 @@ export const User = new SubX({
   }
 })
 
-// load data from database
-const databaseUri = path.join(__dirname, '..', process.env.RINGCENTRAL_BOT_DATABASE)
-if (!fs.existsSync(databaseUri)) {
-  fs.writeFileSync(databaseUri, '{}')
+let database
+if (process.env.AWS_S3_BUCKET) {
+  database = new S3Database({
+    bucket: process.env.RINGCENTRAL_BOT_DATABASE_S3_BUCKET,
+    key: process.env.RINGCENTRAL_BOT_DATABASE_S3_KEY
+  })
+} else {
+  database = new FileDatabase({ file: path.join('..', process.env.RINGCENTRAL_BOT_DATABASE_FILE) })
 }
-const database = require(databaseUri)
-const store = new Store(database)
+
+const store = new Store()
+
 ;(async () => {
-  // init bots
-  for (const k of Object.keys(store.bots)) {
-    const bot = new Bot(store.bots[k])
-    if (await bot.validate()) {
-      store.bots[k] = bot
-      await bot.clearWebHooks()
-      await bot.setupWebHook()
-    }
-  }
-
-  // init users
-  for (const k of Object.keys(store.users)) {
-    const user = new User(store.users[k])
-    if (await user.validate()) {
-      store.users[k] = user
-      await user.clearWebHooks()
-      if (Object.keys(user.groups).length > 0) {
-        await user.setupWebHook()
-      }
-    }
-  }
-
-  // auto save to database
-  SubX.autoRun(store, () => {
-    fs.writeFileSync(path.join(__dirname, '../database.json'), JSON.stringify(store, null, 2))
-  }, debounceTime(1000))
+  const json = await database.read()
+  await store.init(json)
+  SubX.autoRun(store, () => database.write(store), debounceTime(1000))
 })()
 
 export default store
