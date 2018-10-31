@@ -1,4 +1,4 @@
-import store, { Bot, User } from './store'
+import store, { Bot, User } from '../store'
 
 const handle = app => {
   // add bot to Glip
@@ -30,11 +30,11 @@ Please reply "![:Person](${botId})" if you want to talk to me.` })
             break
           }
           const bot = store.getBot(botId)
-          if (/\bmonitor\b/i.test(body.text)) { // monitor voicemail
+          if (/\bmonitor\b/i.test(body.text)) { // monitor messages
             const user = store.getUser(body.creatorId)
             if (user) {
               await user.addGroup(body.groupId, botId)
-              await bot.sendMessage(body.groupId, { text: `![:Person](${body.creatorId}), now your voicemail is monitored!` })
+              await bot.sendMessage(body.groupId, { text: `![:Person](${body.creatorId}), now your messages are monitored!` })
             } else {
               const user = new User()
               const authorizeUri = user.authorizeUri(body.groupId, botId)
@@ -44,7 +44,7 @@ Please reply "![:Person](${botId})" if you want to talk to me.` })
             }
           } else {
             await bot.sendMessage(body.groupId, {
-              text: `If you want me to monitor your voicemail, please reply "![:Person](${botId}) monitor"`
+              text: `If you want me to monitor your messages, please reply "![:Person](${botId}) monitor"`
             })
           }
           break

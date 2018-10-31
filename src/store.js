@@ -190,7 +190,7 @@ export const User = new SubX({
       throw e
     }
   },
-  async setupWebHook () { // setup WebHook for voicemail
+  async setupWebHook () { // setup WebHook for user
     try {
       await this.rc.post('/restapi/v1.0/subscription', {
         eventFilters: [
@@ -213,10 +213,9 @@ export const User = new SubX({
       await this.setupWebHook()
     }
   },
-  async getVoiceMails (count) {
+  async getMessages (count) {
     const r = await this.rc.get('/restapi/v1.0/account/~/extension/~/message-store', {
       params: {
-        messageType: 'VoiceMail',
         perPage: count
       }
     })
