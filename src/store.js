@@ -159,9 +159,11 @@ export const User = new SubX({
       return true
     } catch (e) {
       console.log('User validate', e.response.data)
+      console.log('Going to refresh user token')
       try {
         await this.rc.refresh()
         this.token = this.rc.token()
+        console.log('User token refreshed')
         return true
       } catch (e) {
         console.log('User validate refresh', e.response.data)
