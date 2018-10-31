@@ -10,7 +10,7 @@ const handle = app => {
     const bot = store.getBot(botId)
     await bot.sendMessage(groupId, { text: `![:Person](${user.token.owner_id}), You have successfully authorized me to access your RingCentral data!` })
     await user.addGroup(groupId, botId)
-    await bot.sendMessage(groupId, { text: `![:Person](${user.token.owner_id}), You message is monitored!` })
+    await bot.sendMessage(groupId, { text: `![:Person](${user.token.owner_id}), You messages are monitored!` })
     res.send('You have authorized the bot to access your RingCentral data! Please close this page and get back to Glip.')
   })
 
@@ -23,7 +23,7 @@ const handle = app => {
       if (change) {
         const userId = message.body.extensionId
         const user = store.getUser(userId)
-        const messages = await user.getMessagess(change.newCount)
+        const messages = await user.getMessages(change.newCount)
         console.log(JSON.stringify(messages, null, 2))
 
         for (const groupId of Object.keys(user.groups)) {

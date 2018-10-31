@@ -1,12 +1,9 @@
-import dotenv from 'dotenv'
 import SubX from 'subx'
 import RingCentral from 'ringcentral-js-concise'
 import { debounceTime } from 'rxjs/operators'
 import path from 'path'
 
 import { FileDatabase, S3Database } from './database'
-
-dotenv.config()
 
 // Store
 const Store = new SubX({
