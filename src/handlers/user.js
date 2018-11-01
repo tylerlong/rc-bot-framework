@@ -1,4 +1,5 @@
-import store, { User } from '../models'
+import store from '../models'
+import User from '../models/User'
 
 const handle = app => {
   // user authorize bot

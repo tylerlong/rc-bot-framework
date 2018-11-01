@@ -1,4 +1,6 @@
-import store, { Bot, User } from '../models'
+import store from '../models'
+import Bot from '../models/Bot'
+import User from '../models/User'
 
 const handle = app => {
   // add bot to Glip
