@@ -36,7 +36,7 @@ Please reply "![:Person](${botId})" if you want to talk to me.` })
             const user = store.getUser(body.creatorId)
             if (user) {
               await user.addGroup(body.groupId, botId)
-              await bot.sendMessage(body.groupId, { text: `![:Person](${body.creatorId}), now your messages are monitored!` })
+              await bot.sendMessage(body.groupId, { text: `![:Person](${body.creatorId}), your messages are monitored!` })
             } else {
               const user = new User()
               const authorizeUri = user.authorizeUri(body.groupId, botId)

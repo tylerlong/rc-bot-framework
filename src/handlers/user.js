@@ -24,9 +24,6 @@ const handle = app => {
       if (change) {
         const userId = message.body.extensionId
         const user = store.getUser(userId)
-        const messages = await user.getMessages(change.newCount)
-        console.log(JSON.stringify(messages, null, 2))
-
         for (const groupId of Object.keys(user.groups)) {
           const botId = user.groups[groupId]
           const bot = store.getBot(botId)
