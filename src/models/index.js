@@ -3,7 +3,7 @@ import RingCentral from 'ringcentral-js-concise'
 import { debounceTime } from 'rxjs/operators'
 import path from 'path'
 
-import { FileDatabase, S3Database } from './database'
+import { FileDatabase, S3Database } from '../database'
 
 // Store
 const Store = new SubX({
