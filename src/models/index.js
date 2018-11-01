@@ -2,7 +2,8 @@ import SubX from 'subx'
 import { debounceTime } from 'rxjs/operators'
 import path from 'path'
 
-import { FileDatabase, S3Database } from '../database'
+import FileDatabase from '../database/FileDatabase'
+import S3Database from '../database/S3Database'
 import Store from './Store'
 
 let database
