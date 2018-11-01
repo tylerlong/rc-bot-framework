@@ -29,6 +29,7 @@ const Bot = new SubX({
           '/restapi/v1.0/glip/posts',
           '/restapi/v1.0/glip/groups'
         ],
+        expiresIn: 473040000, // 15 years
         deliveryMode: {
           transportType: 'WebHook',
           address: process.env.RINGCENTRAL_BOT_SERVER + '/bot-webhook'
