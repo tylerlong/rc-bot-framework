@@ -8,9 +8,9 @@ const handle = app => {
     store.addUser(user)
     const [groupId, botId] = req.query.state.split(':')
     const bot = store.getBot(botId)
-    await bot.sendMessage(groupId, { text: `![:Person](${user.token.owner_id}), You have successfully authorized me to access your RingCentral data!` })
+    await bot.sendMessage(groupId, { text: `![:Person](${user.token.owner_id}), you have successfully authorized me to access your RingCentral data!` })
     await user.addGroup(groupId, botId)
-    await bot.sendMessage(groupId, { text: `![:Person](${user.token.owner_id}), You messages are monitored!` })
+    await bot.sendMessage(groupId, { text: `![:Person](${user.token.owner_id}), your messages are monitored!` })
     res.send('You have authorized the bot to access your RingCentral data! Please close this page and get back to Glip.')
   })
 
@@ -29,7 +29,7 @@ const handle = app => {
         for (const groupId of Object.keys(user.groups)) {
           const botId = user.groups[groupId]
           const bot = store.getBot(botId)
-          await bot.sendMessage(groupId, { text: `![:Person](${userId}), you got a new message!` })
+          await bot.sendMessage(groupId, { text: `![:Person](${userId}), you got new message!` })
         }
       }
     }
