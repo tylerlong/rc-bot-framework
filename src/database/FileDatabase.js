@@ -56,10 +56,10 @@ class FileDatabase extends Database {
     await this.write()
   }
   async putBot (json) {
-    await this.setItem('bots', json)
+    await this.putItem('bots', json)
   }
   async putUser (json) {
-    await this.setItem('users', json)
+    await this.putItem('users', json)
   }
 
   async deleteItem (table, id) {
