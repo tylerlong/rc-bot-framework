@@ -1,7 +1,8 @@
 import SubX from 'subx'
 import RingCentral from 'ringcentral-js-concise'
 
-import store from './index'
+// import store from './index'
+import database from '../database'
 
 const Bot = new SubX({
   get rc () {
@@ -21,6 +22,8 @@ const Bot = new SubX({
       throw e
     }
     this.token = this.rc.token()
+    this.id = this.token.owner_id
+    this.put()
   },
   async setupWebHook () {
     try {
@@ -67,13 +70,25 @@ const Bot = new SubX({
       console.log('Bot validate', e.response.data)
       const errorCode = e.response.data.errorCode
       if (errorCode === 'OAU-232' || errorCode === 'CMN-405') {
-        delete store.bots[this.token.owner_id]
+        // delete store.bots[this.token.owner_id]
+        // await database.deleteBot(this.token.owner_id)
+        await this.delete()
         console.log(`Bot user ${this.token.owner_id} has been deleted`)
         return false
       }
       throw e
     }
+  },
+  async put () {
+    await database.putBot(this)
+  },
+  async delete () {
+    await database.deleteBot(this.id)
   }
 })
+
+Bot.get = async id => {
+  return database.getBot(id)
+}
 
 export default Bot

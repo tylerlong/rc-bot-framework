@@ -1,7 +1,8 @@
 import SubX from 'subx'
 import RingCentral from 'ringcentral-js-concise'
 
-import store from './index'
+// import store from './index'
+import database from '../database'
 
 const User = new SubX({
   groups: {},
@@ -28,6 +29,8 @@ const User = new SubX({
       throw e
     }
     this.token = this.rc.token()
+    this.id = this.token.owner_id
+    this.put()
   },
   async validate () {
     try {
@@ -39,11 +42,13 @@ const User = new SubX({
       try {
         await this.rc.refresh()
         this.token = this.rc.token()
+        this.put()
         console.log('User token refreshed')
         return true
       } catch (e) {
         console.log('User validate refresh', e.response.data)
-        delete store.users[this.token.owner_id]
+        // delete store.users[this.token.owner_id]
+        this.delete()
         console.log(`User ${this.token.owner_id} refresh token has expired`)
         return false
       }
@@ -84,6 +89,7 @@ const User = new SubX({
     if (hasNoGroup) {
       await this.setupWebHook()
     }
+    this.put()
   },
   async getMessages (count) {
     const r = await this.rc.get('/restapi/v1.0/account/~/extension/~/message-store', {
@@ -92,7 +98,17 @@ const User = new SubX({
       }
     })
     return r.data.records
+  },
+  async put () {
+    database.putBot(this)
+  },
+  async delete () {
+    database.deleteBot(this.id)
   }
 })
+
+User.get = async id => {
+  return database.getUser(id)
+}
 
 export default User

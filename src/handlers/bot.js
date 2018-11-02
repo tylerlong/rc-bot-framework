@@ -1,13 +1,18 @@
-import store from '../models'
+// import store from '../models'
 import Bot from '../models/Bot'
 import User from '../models/User'
+// import { database } from '../models'
 
 const handle = app => {
   // add bot to Glip
   app.get('/bot-oauth', async (req, res) => {
     const bot = new Bot()
     await bot.authorize(req.query.code)
-    store.addBot(bot)
+
+    // store.addBot(bot)
+    // database.saveBot(bot)
+    // bot.put()
+
     await bot.setupWebHook()
     res.send('Bot added')
   })
@@ -22,7 +27,9 @@ const handle = app => {
       switch (body.eventType) {
         case 'GroupJoined':
           if (body.type === 'PrivateChat') {
-            const bot = store.getBot(botId)
+            // const bot = store.getBot(botId)
+            const bot = Bot.get(botId)
+
             await bot.sendMessage(body.id, { text: `Hello, I am a chatbot.
 Please reply "![:Person](${botId})" if you want to talk to me.` })
           }
@@ -31,9 +38,11 @@ Please reply "![:Person](${botId})" if you want to talk to me.` })
           if (body.creatorId === botId || body.text.indexOf(`![:Person](${botId})`) === -1) {
             break
           }
-          const bot = store.getBot(botId)
+          // const bot = store.getBot(botId)
+          const bot = Bot.get(botId)
           if (/\bmonitor\b/i.test(body.text)) { // monitor messages
-            const user = store.getUser(body.creatorId)
+            // const user = store.getUser(body.creatorId)
+            const user = User.get(body.creatorId)
             if (user) {
               await user.addGroup(body.groupId, botId)
               await bot.sendMessage(body.groupId, { text: `![:Person](${body.creatorId}), your messages are monitored!` })

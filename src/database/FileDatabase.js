@@ -38,6 +38,41 @@ class FileDatabase extends Database {
   async write (json) {
     await fsWriteFile(this.databaseUri, JSON.stringify(json, null, 2))
   }
+
+  async getItem (table, id) {
+    const db = await this.read()
+    return { ...db[table][id], id }
+  }
+  async getBot (id) {
+    return this.getItem('bots', id)
+  }
+  async getUser (id) {
+    return this.getItem('users', id)
+  }
+
+  async putItem (table, json) {
+    const db = await this.read()
+    db[table][json.id] = json
+    await this.write()
+  }
+  async putBot (json) {
+    await this.setItem('bots', json)
+  }
+  async putUser (json) {
+    await this.setItem('users', json)
+  }
+
+  async deleteItem (table, id) {
+    const db = await this.read()
+    delete db[table][id]
+    await this.write()
+  }
+  async deleteBot (id) {
+    await this.deleteItem('bots', id)
+  }
+  async deleteUser (id) {
+    await this.deleteItem('users', id)
+  }
 }
 
 export default FileDatabase
