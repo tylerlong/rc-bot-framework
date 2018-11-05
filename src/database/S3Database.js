@@ -37,7 +37,8 @@ class S3Database {
   async read () {
     await this.ensureBucket()
     await this.ensureKey()
-    const str = await s3.getObject(this.objectParams).promise()
+    const data = await s3.getObject(this.objectParams).promise()
+    const str = data.Body.toString('utf8')
     return JSON.parse(str)
   }
 
