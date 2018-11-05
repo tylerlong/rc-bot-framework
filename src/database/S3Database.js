@@ -3,6 +3,7 @@ import AWS from 'aws-sdk'
 import suger from './mixins/suger'
 import file from './mixins/file'
 
+AWS.config.update({ region: process.env.AWS_REGION })
 const s3 = new AWS.S3()
 
 class S3Database {
