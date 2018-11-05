@@ -3,14 +3,35 @@ import bodyParser from 'body-parser'
 
 import bot from './handlers/bot'
 import user from './handlers/user'
-
-import Store from './models/Store'
 import database from './database'
+import Bot from './models/Bot'
+import User from './models/User'
 
-const store = new Store()
-;(async () => {
+(async () => {
   const json = await database.read()
-  await store.init(json)
+
+  // init bots
+  if (json.bots) {
+    for (const k of Object.keys(json.bots)) {
+      const bot = new Bot(json.bots[k])
+      if (await bot.validate()) {
+        await bot.clearWebHooks()
+        await bot.setupWebHook()
+      }
+    }
+  }
+  // init users
+  if (json.users) {
+    for (const k of Object.keys(json.users)) {
+      const user = new User(json.users[k])
+      if (await user.validate()) {
+        await user.clearWebHooks()
+        if (Object.keys(user.groups).length > 0) {
+          await user.setupWebHook()
+        }
+      }
+    }
+  }
 })()
 
 const app = express()
