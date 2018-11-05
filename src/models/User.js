@@ -63,7 +63,7 @@ const User = new SubX({
         }
       }
     } catch (e) {
-      console.log('Bot clearWebHooks', e.response.data)
+      console.log('User clearWebHooks', e.response.data)
       throw e
     }
   },
@@ -100,10 +100,10 @@ const User = new SubX({
     return r.data.records
   },
   async put () {
-    database.putBot(this)
+    database.putUser(this)
   },
   async delete () {
-    database.deleteBot(this.id)
+    database.deleteUser(this.id)
   }
 })
 
