@@ -42,10 +42,11 @@ class DynamoDB {
   async getItem (name, id) {
     await this.ensure(name)
     const TableName = this.tableNamePrefix + name
-    return docClient.get({
+    const r = await docClient.get({
       TableName,
       Key: { id }
     }).promise()
+    return r.Item
   }
 
   async putItem (name, obj) {

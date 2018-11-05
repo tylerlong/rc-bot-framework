@@ -8,6 +8,11 @@ yarn start
 ```
 
 
+## Features
+
+- Support File, AWS S3 & AWS DynomaDB as database
+
+
 ## Todo
 
 - monitor events for bot user and normal user removal
