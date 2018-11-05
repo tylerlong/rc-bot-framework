@@ -47,7 +47,7 @@ const fileMixins = {
 }
 
 let database
-if (process.env.AWS_S3_BUCKET) {
+if (process.env.RINGCENTRAL_BOT_DATABASE_S3_BUCKET) {
   Object.assign(S3Database.prototype, sugerMixins)
   Object.assign(S3Database.prototype, fileMixins)
   database = new S3Database({
