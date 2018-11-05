@@ -8,16 +8,13 @@ const fsReadFile = promisify(fs.readFile)
 
 class FileDatabase {
   constructor (options) {
-    for (const key of Object.keys(options)) {
-      this[key] = options[key]
-    }
-    if (!this.file) {
+    if (!options.file) {
       throw new TypeError(`Please specify valid file like this: \`new FileDatabase({ file: '...' })\``)
     }
-    if (path.isAbsolute(this.file)) {
-      this.databaseUri = this.file
+    if (path.isAbsolute(options.file)) {
+      this.databaseUri = options.file
     } else {
-      this.databaseUri = path.join(__dirname, '..', this.file)
+      this.databaseUri = path.join(__dirname, '..', options.file)
     }
   }
 
@@ -45,13 +42,6 @@ class FileDatabase {
       return { ...db[table][id], id }
     }
   }
-  // async getBot (id) {
-  //   return this.getItem('bots', id)
-  // }
-  // async getUser (id) {
-  //   return this.getItem('users', id)
-  // }
-
   async putItem (table, json) {
     const db = await this.read()
     if (!db[table]) {
@@ -60,24 +50,11 @@ class FileDatabase {
     db[table][json.id] = json
     await this.write(db)
   }
-  // async putBot (json) {
-  //   await this.putItem('bots', json)
-  // }
-  // async putUser (json) {
-  //   await this.putItem('users', json)
-  // }
-
   async deleteItem (table, id) {
     const db = await this.read()
     delete db[table][id]
     await this.write(db)
   }
-  // async deleteBot (id) {
-  //   await this.deleteItem('bots', id)
-  // }
-  // async deleteUser (id) {
-  //   await this.deleteItem('users', id)
-  // }
 }
 
 export default FileDatabase
