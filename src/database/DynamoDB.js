@@ -45,28 +45,43 @@ class DynamoDB {
 
   async getItem (name, id) {
     const TableName = this.tableNamePrefix + name
-    const r = await docClient.get({
-      TableName,
-      Key: { id }
-    }).promise()
-    return r.Item
+    try {
+      const r = await docClient.get({
+        TableName,
+        Key: { id: id.toString() }
+      }).promise()
+      return r.Item
+    } catch (e) {
+      console.log('DynomaDB getItem', name, id, e)
+      throw e
+    }
   }
 
   async putItem (name, obj) {
     const json = obj.toJSON()
     const TableName = this.tableNamePrefix + name
-    await docClient.put({
-      TableName,
-      Item: json
-    }).promise()
+    try {
+      await docClient.put({
+        TableName,
+        Item: json
+      }).promise()
+    } catch (e) {
+      console.log('DynomaDB putItem', name, e)
+      throw e
+    }
   }
 
   async deleteItem (name, id) {
     const TableName = this.tableNamePrefix + name
-    await docClient.delete({
-      TableName,
-      Key: { id }
-    }).promise()
+    try {
+      await docClient.delete({
+        TableName,
+        Key: { id: id.toString() }
+      }).promise()
+    } catch (e) {
+      console.log('DynomaDB deleteItem', name, id, e)
+      throw e
+    }
   }
 
   async read () {
