@@ -2,7 +2,9 @@
   "license": "MIT",
   "scripts": {
     "start": "node -r @babel/register -r dotenv/config src/index.js",
-    "ngrok": "npx ngrok http -region eu 3000"
+    "ngrok": "npx ngrok http -region eu 3000",
+    "awsToken": "~/.okta/aws-token",
+    "fullStart": "yarn awsToken && yarn start"
   },
   "devDependencies": {
     "@babel/core": "^7.1.2",
