@@ -1,3 +1,5 @@
+import delay from 'timeout-as-promise'
+
 // import store from '../models'
 import Bot from '../models/Bot'
 import User from '../models/User'
@@ -13,8 +15,9 @@ const handle = app => {
     // database.saveBot(bot)
     // bot.put()
 
-    await bot.setupWebHook()
     res.send('Bot added')
+    await delay(30000) // wait for bot user to be ready
+    await bot.setupWebHook()
   })
 
   // bot receive message from Glip
