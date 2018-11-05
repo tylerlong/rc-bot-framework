@@ -18,4 +18,3 @@ yarn start
 - monitor events for bot user and normal user removal
 - monitor user removed from group
 - auto refresh webhook and user token
-- only call database ensure on startup

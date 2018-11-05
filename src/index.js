@@ -9,6 +9,7 @@ import User from './models/User'
 
 // init
 (async () => {
+  await database.ensure()
   const json = await database.read()
   // init bots
   if (json.bots) {

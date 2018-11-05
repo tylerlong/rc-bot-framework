@@ -30,7 +30,6 @@ class FileDatabase {
   }
 
   async read () {
-    await this.ensure()
     const data = await fsReadFile(this.databaseUri, 'utf8')
     return JSON.parse(data)
   }

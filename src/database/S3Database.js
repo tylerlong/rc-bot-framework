@@ -37,17 +37,18 @@ class S3Database {
       }
     }
   }
-
-  async read () {
+  async ensure () {
     await this.ensureBucket()
     await this.ensureKey()
+  }
+
+  async read () {
     const data = await s3.getObject(this.objectParams).promise()
     const str = data.Body.toString('utf8')
     return JSON.parse(str)
   }
 
   async write (json) {
-    await this.ensureBucket()
     await s3.putObject({ ...this.objectParams, Body: JSON.stringify(json, null, 2) }).promise()
   }
 }

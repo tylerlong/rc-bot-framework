@@ -14,7 +14,7 @@ class DynamoDB {
     this.tableNamePrefix = options.tableNamePrefix
   }
 
-  async ensure (name) {
+  async ensureTable (name) {
     const TableName = this.tableNamePrefix + name
     try {
       await dynamoDB.describeTable({ TableName }).promise()
@@ -38,9 +38,12 @@ class DynamoDB {
       }
     }
   }
+  async ensure () {
+    await this.ensureTable('bots')
+    await this.ensureTable('users')
+  }
 
   async getItem (name, id) {
-    await this.ensure(name)
     const TableName = this.tableNamePrefix + name
     const r = await docClient.get({
       TableName,
@@ -67,17 +70,11 @@ class DynamoDB {
   }
 
   async read () {
-    await this.ensure('bots')
-    await this.ensure('users')
-
-    // must wait if the first time create table
-
     const bots = await docClient.scan({ TableName: this.tableNamePrefix + 'bots' }).promise()
     const users = await docClient.scan({ TableName: this.tableNamePrefix + 'users' }).promise()
     const result = { bots: {}, users: {} }
     bots.Items.forEach(bot => { result.bots[bot.id] = bot })
     users.Items.forEach(user => { result.users[user.id] = user })
-
     return result
   }
 }
