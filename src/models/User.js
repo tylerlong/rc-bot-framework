@@ -108,7 +108,10 @@ const User = new SubX({
 })
 
 User.get = async id => {
-  return database.getUser(id)
+  const json = await database.getUser(id)
+  if (json) {
+    return new User(json)
+  }
 }
 
 export default User

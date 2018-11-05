@@ -41,7 +41,9 @@ class FileDatabase extends Database {
 
   async getItem (table, id) {
     const db = await this.read()
-    return { ...db[table][id], id }
+    if (db[table] && db[table][id]) {
+      return { ...db[table][id], id }
+    }
   }
   async getBot (id) {
     return this.getItem('bots', id)

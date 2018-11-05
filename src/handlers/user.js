@@ -14,7 +14,7 @@ const handle = app => {
     const [groupId, botId] = req.query.state.split(':')
 
     // const bot = store.getBot(botId)
-    const bot = Bot.get(botId)
+    const bot = await Bot.get(botId)
 
     await bot.sendMessage(groupId, { text: `![:Person](${user.token.owner_id}), you have successfully authorized me to access your RingCentral data!` })
     await user.addGroup(groupId, botId)
@@ -32,13 +32,13 @@ const handle = app => {
         const userId = message.body.extensionId
 
         // const user = store.getUser(userId)
-        const user = User.get(userId)
+        const user = await User.get(userId)
 
         for (const groupId of Object.keys(user.groups)) {
           const botId = user.groups[groupId]
 
           // const bot = store.getBot(botId)
-          const bot = Bot.get(botId)
+          const bot = await Bot.get(botId)
 
           await bot.sendMessage(groupId, { text: `![:Person](${userId}), you got new message!` })
         }

@@ -88,7 +88,10 @@ const Bot = new SubX({
 })
 
 Bot.get = async id => {
-  return database.getBot(id)
+  const json = await database.getBot(id)
+  if (json) {
+    return new Bot(json)
+  }
 }
 
 export default Bot

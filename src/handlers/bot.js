@@ -31,7 +31,7 @@ const handle = app => {
         case 'GroupJoined':
           if (body.type === 'PrivateChat') {
             // const bot = store.getBot(botId)
-            const bot = Bot.get(botId)
+            const bot = await Bot.get(botId)
 
             await bot.sendMessage(body.id, { text: `Hello, I am a chatbot.
 Please reply "![:Person](${botId})" if you want to talk to me.` })
@@ -42,10 +42,10 @@ Please reply "![:Person](${botId})" if you want to talk to me.` })
             break
           }
           // const bot = store.getBot(botId)
-          const bot = Bot.get(botId)
+          const bot = await Bot.get(botId)
           if (/\bmonitor\b/i.test(body.text)) { // monitor messages
             // const user = store.getUser(body.creatorId)
-            const user = User.get(body.creatorId)
+            const user = await User.get(body.creatorId)
             if (user) {
               await user.addGroup(body.groupId, botId)
               await bot.sendMessage(body.groupId, { text: `![:Person](${body.creatorId}), your messages are monitored!` })
