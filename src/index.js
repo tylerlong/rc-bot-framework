@@ -7,9 +7,9 @@ import database from './database'
 import Bot from './models/Bot'
 import User from './models/User'
 
+// init
 (async () => {
   const json = await database.read()
-
   // init bots
   if (json.bots) {
     for (const k of Object.keys(json.bots)) {

@@ -1,10 +1,10 @@
 import AWS from 'aws-sdk'
 
-import Database from './Database'
+import FileDatabase from './FileDatabase'
 
 const s3 = new AWS.S3()
 
-class S3Database extends Database {
+class S3Database extends FileDatabase {
   constructor (options) {
     super(options)
     if (!this.bucket || !this.key) {
