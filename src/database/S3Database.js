@@ -1,16 +1,13 @@
 import AWS from 'aws-sdk'
 
-import FileDatabase from './FileDatabase'
-
 const s3 = new AWS.S3()
 
-class S3Database extends FileDatabase {
+class S3Database {
   constructor (options) {
-    super(options)
-    if (!this.bucket || !this.key) {
-      throw new TypeError(`Please specify valid bucket and key like this: \`new S3Database({ bucket: '...', key: '...' })\``)
+    if (!options.Bucket || !options.Key) {
+      throw new TypeError(`Please specify valid \`Bucket\` and \`Key\` like this: \`new S3Database({ Bucket: '...', Key: '...' })\``)
     }
-    this.options = { Bucket: this.bucket, Key: this.key }
+    this.options = options
   }
 
   async ensureBucket () {
