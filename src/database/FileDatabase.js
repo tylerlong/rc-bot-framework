@@ -52,8 +52,11 @@ class FileDatabase extends Database {
 
   async putItem (table, json) {
     const db = await this.read()
+    if (!db[table]) {
+      db[table] = {}
+    }
     db[table][json.id] = json
-    await this.write()
+    await this.write(db)
   }
   async putBot (json) {
     await this.putItem('bots', json)
@@ -65,7 +68,7 @@ class FileDatabase extends Database {
   async deleteItem (table, id) {
     const db = await this.read()
     delete db[table][id]
-    await this.write()
+    await this.write(db)
   }
   async deleteBot (id) {
     await this.deleteItem('bots', id)
