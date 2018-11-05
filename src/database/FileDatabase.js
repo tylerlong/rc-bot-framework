@@ -2,6 +2,9 @@ import path from 'path'
 import fs from 'fs'
 import { promisify } from 'util'
 
+import suger from './mixins/suger'
+import file from './mixins/file'
+
 const fsAccess = promisify(fs.access)
 const fsWriteFile = promisify(fs.writeFile)
 const fsReadFile = promisify(fs.readFile)
@@ -36,5 +39,8 @@ class FileDatabase {
     await fsWriteFile(this.databaseUri, JSON.stringify(json, null, 2))
   }
 }
+
+Object.assign(FileDatabase.prototype, suger)
+Object.assign(FileDatabase.prototype, file)
 
 export default FileDatabase

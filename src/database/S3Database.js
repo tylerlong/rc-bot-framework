@@ -1,5 +1,8 @@
 import AWS from 'aws-sdk'
 
+import suger from './mixins/suger'
+import file from './mixins/file'
+
 const s3 = new AWS.S3()
 
 class S3Database {
@@ -47,5 +50,8 @@ class S3Database {
     await s3.putObject({ ...this.objectParams, Body: JSON.stringify(json, null, 2) }).promise()
   }
 }
+
+Object.assign(S3Database.prototype, suger)
+Object.assign(S3Database.prototype, file)
 
 export default S3Database
