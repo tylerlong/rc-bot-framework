@@ -20,7 +20,7 @@
     "body-parser": "^1.18.3",
     "express": "^4.16.4",
     "ringcentral-js-concise": "^0.6.2",
-    "subx": "^0.7.1",
+    "subx": "^0.7.2",
     "timeout-as-promise": "^1.0.0"
   }
 }

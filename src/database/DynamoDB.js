@@ -4,6 +4,7 @@ import suger from './mixins/suger'
 
 AWS.config.update({ region: process.env.AWS_REGION })
 const dynamoDB = new AWS.DynamoDB()
+const docClient = new AWS.DynamoDB.DocumentClient()
 
 class DynamoDB {
   constructor (options) {
@@ -26,7 +27,11 @@ class DynamoDB {
           ],
           KeySchema: [
             { AttributeName: 'id', KeyType: 'HASH' }
-          ]
+          ],
+          ProvisionedThroughput: {
+            ReadCapacityUnits: 10,
+            WriteCapacityUnits: 10
+          }
         }).promise()
       } else {
         throw e
@@ -37,15 +42,16 @@ class DynamoDB {
   async getItem (name, id) {
     await this.ensure(name)
     const TableName = this.tableNamePrefix + name
-    await dynamoDB.getItem({
+    return docClient.get({
       TableName,
-      Key: { id: { S: id } }
+      Key: { id }
     }).promise()
   }
 
-  async putItem (name, json) {
+  async putItem (name, obj) {
+    const json = obj.toJSON()
     const TableName = this.tableNamePrefix + name
-    await dynamoDB.putItem({
+    await docClient.put({
       TableName,
       Item: json
     }).promise()
@@ -53,10 +59,25 @@ class DynamoDB {
 
   async deleteItem (name, id) {
     const TableName = this.tableNamePrefix + name
-    await dynamoDB.deleteItem({
+    await docClient.delete({
       TableName,
-      Key: { id: { S: id } }
+      Key: { id }
     }).promise()
+  }
+
+  async read () {
+    await this.ensure('bots')
+    await this.ensure('users')
+
+    // must wait if the first time create table
+
+    const bots = await docClient.scan({ TableName: this.tableNamePrefix + 'bots' }).promise()
+    const users = await docClient.scan({ TableName: this.tableNamePrefix + 'users' }).promise()
+    const result = { bots: {}, users: {} }
+    bots.Items.forEach(bot => { result.bots[bot.id] = bot })
+    users.Items.forEach(user => { result.users[user.id] = user })
+
+    return result
   }
 }
 
