@@ -1,7 +1,6 @@
 import SubX from 'subx'
 import RingCentral from 'ringcentral-js-concise'
 
-// import store from './index'
 import database from '../database'
 
 const User = new SubX({
@@ -47,7 +46,6 @@ const User = new SubX({
         return true
       } catch (e) {
         console.log('User validate refresh', e.response.data)
-        // delete store.users[this.token.owner_id]
         this.delete()
         console.log(`User ${this.token.owner_id} refresh token has expired`)
         return false

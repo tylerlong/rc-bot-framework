@@ -1,20 +1,13 @@
 import delay from 'timeout-as-promise'
 
-// import store from '../models'
 import Bot from '../models/Bot'
 import User from '../models/User'
-// import { database } from '../models'
 
 const handle = app => {
   // add bot to Glip
   app.get('/bot-oauth', async (req, res) => {
     const bot = new Bot()
     await bot.authorize(req.query.code)
-
-    // store.addBot(bot)
-    // database.saveBot(bot)
-    // bot.put()
-
     res.send('Bot added')
     await delay(30000) // wait for bot user to be ready
     await bot.setupWebHook()
@@ -30,9 +23,7 @@ const handle = app => {
       switch (body.eventType) {
         case 'GroupJoined':
           if (body.type === 'PrivateChat') {
-            // const bot = store.getBot(botId)
             const bot = await Bot.get(botId)
-
             await bot.sendMessage(body.id, { text: `Hello, I am a chatbot.
 Please reply "![:Person](${botId})" if you want to talk to me.` })
           }
@@ -41,10 +32,8 @@ Please reply "![:Person](${botId})" if you want to talk to me.` })
           if (body.creatorId === botId || body.text.indexOf(`![:Person](${botId})`) === -1) {
             break
           }
-          // const bot = store.getBot(botId)
           const bot = await Bot.get(botId)
           if (/\bmonitor\b/i.test(body.text)) { // monitor messages
-            // const user = store.getUser(body.creatorId)
             const user = await User.get(body.creatorId)
             if (user) {
               await user.addGroup(body.groupId, botId)

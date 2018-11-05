@@ -2,12 +2,9 @@ import SubX from 'subx'
 
 import Bot from './Bot'
 import User from './User'
-// import store from './index'
 
 // Store
 const Store = new SubX({
-  // bots: {},
-  // users: {},
   async init (json) {
     for (const key of Object.keys(json)) {
       if (key !== 'bots' && key !== 'users') {
@@ -39,18 +36,6 @@ const Store = new SubX({
       }
     }
   }
-  // getBot (id) {
-  //   return this.bots[id]
-  // },
-  // getUser (id) {
-  //   return this.users[id]
-  // },
-  // addBot (bot) {
-  //   this.bots[bot.token.owner_id] = bot
-  // },
-  // addUser (user) {
-  //   this.users[user.token.owner_id] = user
-  // }
 })
 
 export default Store

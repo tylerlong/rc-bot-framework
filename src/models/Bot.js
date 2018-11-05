@@ -1,7 +1,6 @@
 import SubX from 'subx'
 import RingCentral from 'ringcentral-js-concise'
 
-// import store from './index'
 import database from '../database'
 
 const Bot = new SubX({
@@ -70,8 +69,6 @@ const Bot = new SubX({
       console.log('Bot validate', e.response.data)
       const errorCode = e.response.data.errorCode
       if (errorCode === 'OAU-232' || errorCode === 'CMN-405') {
-        // delete store.bots[this.token.owner_id]
-        // await database.deleteBot(this.token.owner_id)
         await this.delete()
         console.log(`Bot user ${this.token.owner_id} has been deleted`)
         return false
