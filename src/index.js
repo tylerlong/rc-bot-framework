@@ -25,6 +25,16 @@ import User from './models/User'
   if (json.users) {
     for (const k of Object.keys(json.users)) {
       const user = new User(json.users[k])
+
+      for (const groupId of Object.keys(user.groups)) {
+        const botId = user.groups[groupId]
+        if (!(await database.getBot(botId))) {
+          delete user.groups[groupId]
+          user.put()
+          console.log(`Bot user ${botId} had been removed`)
+        }
+      }
+
       if (await user.validate()) {
         await user.clearWebHooks()
         if (Object.keys(user.groups).length > 0) {
