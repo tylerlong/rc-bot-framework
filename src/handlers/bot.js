@@ -21,6 +21,14 @@ const handle = app => {
     const body = message.body
     if (body) {
       switch (body.eventType) {
+        case 'Delete':
+          if (body.extensionId) {
+            const bot = await Bot.get(body.extensionId)
+            await bot.clearWebHooks()
+            await bot.delete()
+            console.log(`Bot user ${body.extensionId} has been removed`)
+          }
+          break
         case 'GroupJoined':
           if (body.type === 'PrivateChat') {
             const bot = await Bot.get(botId)
