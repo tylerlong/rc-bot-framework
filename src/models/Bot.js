@@ -29,7 +29,8 @@ const Bot = new SubX({
       await this.rc.post('/restapi/v1.0/subscription', {
         eventFilters: [
           '/restapi/v1.0/glip/posts',
-          '/restapi/v1.0/glip/groups'
+          '/restapi/v1.0/glip/groups',
+          '/restapi/v1.0/account/~/extension/~'
         ],
         expiresIn: 473040000, // 15 years
         deliveryMode: {
